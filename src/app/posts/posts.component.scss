@@ -1,0 +1,30 @@
+.page-header {
+  text-align: center;
+  padding: 1.8 rem;
+  background-color: hsl(330, 36%, 38%);
+  color: rgb(255, 255, 255);
+}
+
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 2rem;
+}
+
+.posts-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem;
+  border-radius: 15px;
+  background-color: #8b5454;
+  display: flex;
+  flex-direction: column;
+}
+
+.posts-card button {
+  align-self: flex-end;
+  margin-top: 1rem;
+  padding: 0.4rem 1rem;
+}
