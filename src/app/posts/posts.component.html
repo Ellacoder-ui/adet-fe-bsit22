@@ -1,0 +1,41 @@
+<div class="posts-container">
+  <header class="feed-header">
+    <h1>News Feed</h1>
+    <button class="create-btn" (click)='onCreatePost()'>
+      <span class="icon">+</span> Create Post
+    </button>
+  </header>
+
+  <div class="feed-content">
+    @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading your feed...</p>
+    </div>
+    } @else {
+    <div class="posts-grid">
+      @for (post of posts(); track post.post_id) {
+      <article class="post-card">
+        <div class="post-header">
+          <h2 class="post-title">{{ post.title }}</h2>
+          <span class="post-status" [class]="post.status.toLowerCase()">
+            {{ post.status }}
+          </span>
+        </div>
+        <p class="post-description">{{ post.description }}</p>
+        <footer class="post-footer">
+          <span class="post-date">{{ post.created_at | date:'mediumDate' }}</span>
+          <button class="delete-btn" (click)="onDeletePost(post.post_id)" title="Delete Post">
+            <span class="delete-icon">🗑</span>
+          </button>
+        </footer>
+      </article>
+      } @empty {
+      <div class="empty-state">
+        <p>No posts available yet. Be the first to create one!</p>
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>

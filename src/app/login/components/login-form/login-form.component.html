@@ -1,0 +1,27 @@
+<form (ngSubmit)="onsubmitClicked()" novalidate>
+  <div class="form-group">
+    <label for="email">{{ labelEmail() }}</label>
+    <input
+      type="text"
+      id="email"
+      name="email"
+      [(ngModel)]="email"
+      [placeholder]="placeholderEmail()"
+      required
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="password">{{ labelPassword() }}</label>
+    <input
+      type="text"
+      id="password"
+      name="password"
+      [(ngModel)]="password"
+      [placeholder]="placeholderPassword()"
+      required
+    />
+  </div>
+
+  <button type="submit" [disabled]="disabled()"> {{ buttonText() }} </button>
+</form>

@@ -1,0 +1,54 @@
+<div class="create-post-container">
+  <div class="header">
+    <h1>Create post</h1>
+    <button class="btn-back" (click)="onBack()">
+      <span class="icon">←</span> Back
+    </button>
+  </div>
+
+  <div class="form-card">
+    <form [formGroup]="postForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input 
+          type="text" 
+          id="title" 
+          formControlName="title" 
+          placeholder="Enter post title"
+          [class.error]="postForm.get('title')?.invalid && postForm.get('title')?.touched"
+        >
+        <span class="error-msg" *ngIf="postForm.get('title')?.invalid && postForm.get('title')?.touched">
+          Title is required (min 3 characters).
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea 
+          id="description" 
+          formControlName="description" 
+          placeholder="What's on your mind?"
+          rows="5"
+          [class.error]="postForm.get('description')?.invalid && postForm.get('description')?.touched"
+        ></textarea>
+        <span class="error-msg" *ngIf="postForm.get('description')?.invalid && postForm.get('description')?.touched">
+          Description is required.
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" formControlName="status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" [disabled]="postForm.invalid">
+          Create Post
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

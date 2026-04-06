@@ -1,0 +1,76 @@
+<div class="page-shell">
+  <header class="app-banner">
+    <div class="brand-left">
+      <div class="logo"></div>
+      <div>
+        <div class="school-name">Liceo de Cagayan University</div>
+        <div class="school-tagline">Committed to Total Human Formation</div>
+      </div>
+    </div>
+    <div class="logo-right"></div>
+  </header>
+
+  <main class="queue-page">
+    <section class="queue-content">
+      <button class="back-button" (click)="backToRoleSelection()">← Back role selection</button>
+
+      <div class="section-header">
+        <h2>Select Services</h2>
+        <p>Choose the services you need. You can select only one service to receive your number.</p>
+      </div>
+
+      <div class="service-grid">
+        <button
+          *ngFor="let service of session.serviceOptions"
+          type="button"
+          class="service-card"
+          [class.active]="selectedService?.id === service.id"
+          (click)="selectService(service.id)">
+          <span class="service-icon">{{ service.icon }}</span>
+          <span>{{ service.label }}</span>
+        </button>
+      </div>
+
+      <section class="queue-summary">
+        <div class="queue-summary-title">{{ queueTitle }}</div>
+        <div class="queue-details">
+          <div class="queue-label">CURRENT NUMBER</div>
+          <div class="queue-number">{{ displayNumber ?? '-' }}</div>
+        </div>
+        <button class="next-button" [disabled]="!selectedService || !isStaff" (click)="nextNumber()">
+          {{ isStaff ? 'NEXT NUMBER' : 'Waiting for service' }}
+        </button>
+      </section>
+    </section>
+
+    <aside class="monitor-panel">
+      <div class="monitor-header">
+        <span class="monitor-icon">🖥️</span>
+        <div>
+          <h3>REAL TIME MONITOR</h3>
+        </div>
+      </div>
+
+      <div class="monitor-list">
+        <div *ngFor="let service of session.serviceOptions; let idx = index" class="monitor-item">
+          <span class="monitor-step">{{ idx + 1 }}</span>
+          <div class="monitor-body">
+            <div class="monitor-title">{{ service.label }}</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <button class="logout-fab" (click)="openLogoutConfirm()">⏻</button>
+  </main>
+
+  <div class="modal-backdrop" *ngIf="showLogoutConfirm()">
+    <div class="modal-card">
+      <h3>Are you sure you want to log out?</h3>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn no" (click)="confirmLogout(false)">NO</button>
+        <button type="button" class="modal-btn yes" (click)="confirmLogout(true)">YES</button>
+      </div>
+    </div>
+  </div>
+</div>

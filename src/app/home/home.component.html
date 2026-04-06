@@ -1,0 +1,35 @@
+<div class="landing-shell">
+  <header class="landing-banner">
+    <div class="brand-left">
+      <div class="logo"></div>
+      <div>
+        <div class="school-name">Liceo de Cagayan University</div>
+        <div class="school-tagline">Committed to Total Human Formation</div>
+      </div>
+    </div>
+    <div class="logo-right"></div>
+  </header>
+
+  <main class="home-page">
+    <div class="hero-copy">
+      <h1>Welcome to the Cashier Portal</h1>
+      <p>Please select your role to continue</p>
+    </div>
+
+    <div class="role-grid">
+      <article class="role-card student-card">
+        <div class="role-icon">🎓</div>
+        <h2>Student</h2>
+        <p>Access payment services, request documents, and manage your account</p>
+        <a routerLink="/login" [queryParams]="{ role: 'student' }" class="btn btn-primary">Continue as Student</a>
+      </article>
+
+      <article class="role-card staff-card">
+        <div class="role-icon">👥</div>
+        <h2>Staff / Cashier</h2>
+        <p>Process transactions, manage counters, and serve customers</p>
+        <a routerLink="/login" [queryParams]="{ role: 'staff' }" class="btn btn-secondary">Continue as Staff</a>
+      </article>
+    </div>
+  </main>
+</div>

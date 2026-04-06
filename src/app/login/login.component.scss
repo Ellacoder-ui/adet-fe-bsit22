@@ -1,0 +1,71 @@
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: #ececec;
+}
+
+.login-card {
+  width: min(520px, 100%);
+  padding: 2.2rem;
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.login-intro {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 1.8rem;
+}
+
+.login-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: #8c141d;
+  font-size: 0.85rem;
+}
+
+.login-card h1 {
+  margin: 0;
+  font-size: clamp(2rem, 2.4vw, 2.6rem);
+  color: #1c1b1a;
+}
+
+.login-intro p {
+  margin: 0;
+  line-height: 1.75;
+  color: #5b5854;
+}
+
+.warning-message {
+  padding: 1rem 1.2rem;
+  border-radius: 18px;
+  background: #fdecea;
+  color: #8c141d;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+}
+
+.login-footnote {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.8rem;
+  color: #5d5b5b;
+  font-size: 0.95rem;
+}
+
+.back-link {
+  color: #af531f;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
