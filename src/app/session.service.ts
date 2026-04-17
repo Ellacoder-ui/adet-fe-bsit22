@@ -1,16 +1,17 @@
 import { Injectable, signal } from '@angular/core';
 
 export interface ServiceOption {
-  id: 'tuition' | 'soa' | 'promissory' | 'inquiries';
+  id: string;
   label: string;
   icon: string;
 }
 
 const SERVICE_OPTIONS: ServiceOption[] = [
-  { id: 'tuition', label: 'Tuition & fees', icon: '$' },
-  { id: 'soa', label: 'Request Statement of Account (SOA)', icon: 'S' },
-  { id: 'promissory', label: 'Promissory Notes', icon: 'P' },
-  { id: 'inquiries', label: 'Inquiries', icon: '?' }
+  { id: '1', label: 'Tuition', icon: '$' },
+  { id: '2', label: 'SOA', icon: 'S' },
+  { id: '3', label: 'Promissory', icon: 'P' },
+  { id: '4', label: 'Refund', icon: 'R' },
+  { id: '5', label: 'Adjustment', icon: 'A' }
 ];
 
 @Injectable({
@@ -18,67 +19,83 @@ const SERVICE_OPTIONS: ServiceOption[] = [
 })
 export class SessionService {
   public role = signal<'student' | 'staff'>('student');
+  public userId = signal<number | null>(null);
+  public studentId = signal<number | null>(null);
+  public cashierId = signal<number | null>(null);
+  public assignedCounter = signal<number | null>(null);
+  public email = signal('');
   public fullName = signal('');
-  public idNumber = signal('');
   public selectedService = signal<ServiceOption | null>(null);
   public assignedNumber = signal<number | null>(null);
   public currentServingNumber = signal<number | null>(null);
+  public queueId = signal<number | null>(null);
+  public queuePosition = signal<number | null>(null);
   public warning = signal('');
-
-  private serviceTickets: Record<ServiceOption['id'], number> = {
-    tuition: 0,
-    soa: 0,
-    promissory: 0,
-    inquiries: 0
-  };
 
   public readonly serviceOptions = SERVICE_OPTIONS;
 
   public reset(): void {
     this.role.set('student');
+    this.userId.set(null);
+    this.studentId.set(null);
+    this.cashierId.set(null);
+    this.assignedCounter.set(null);
+    this.email.set('');
     this.fullName.set('');
-    this.idNumber.set('');
     this.selectedService.set(null);
     this.assignedNumber.set(null);
     this.currentServingNumber.set(null);
+    this.queueId.set(null);
+    this.queuePosition.set(null);
     this.warning.set('');
-    this.serviceTickets = {
-      tuition: 0,
-      soa: 0,
-      promissory: 0,
-      inquiries: 0
-    };
   }
 
   public setRole(role: 'student' | 'staff'): void {
     this.role.set(role);
-    this.selectedService.set(null);
-    this.assignedNumber.set(null);
-    this.currentServingNumber.set(null);
     this.warning.set('');
   }
 
-  public setDetails(fullName: string, idNumber: string): void {
-    this.fullName.set(fullName);
-    this.idNumber.set(idNumber);
+  public setAuthUser(data: {
+    userId: number;
+    role: 'student' | 'staff';
+    email: string;
+    studentId?: number;
+    cashierId?: number;
+    assignedCounter?: number | null;
+    fullName?: string;
+  }): void {
+    this.userId.set(data.userId);
+    this.role.set(data.role);
+    this.email.set(data.email);
+    this.studentId.set(data.studentId ?? null);
+    this.cashierId.set(data.cashierId ?? null);
+    this.assignedCounter.set(data.assignedCounter ?? null);
+    this.fullName.set(data.fullName ?? '');
   }
 
-  public selectService(serviceId: ServiceOption['id']): void {
+  public setSelectedService(serviceId: string): void {
     const option = SERVICE_OPTIONS.find((item) => item.id === serviceId);
     if (!option) {
       return;
     }
-
     this.selectedService.set(option);
-    this.serviceTickets[serviceId] += 1;
-    this.assignedNumber.set(this.serviceTickets[serviceId]);
-    this.currentServingNumber.set(this.serviceTickets[serviceId]);
   }
 
-  public nextNumber(): void {
-    const current = this.currentServingNumber();
-    if (current !== null) {
-      this.currentServingNumber.set(current + 1);
-    }
+  public clearSelectedService(): void {
+    this.selectedService.set(null);
+  }
+
+  public setActiveQueue(data: {
+    queueId?: number | null;
+    queueNumber?: number | null;
+    counterId?: number | null;
+    position?: number | null;
+    currentServingNumber?: number | null;
+  }): void {
+    this.queueId.set(data.queueId ?? null);
+    this.assignedNumber.set(data.queueNumber ?? null);
+    this.assignedCounter.set(data.counterId ?? this.assignedCounter());
+    this.queuePosition.set(data.position ?? null);
+    this.currentServingNumber.set(data.currentServingNumber ?? this.currentServingNumber());
   }
 }

@@ -12,57 +12,101 @@
 
   <main class="queue-page">
     <section class="queue-content">
-      <button class="back-button" (click)="backToRoleSelection()">← Back role selection</button>
 
       <div class="section-header">
         <h2>Select Services</h2>
-        <p>Choose the services you need. You can select only one service to receive your number.</p>
+        <p *ngIf="!isStaff">Choose one service to get your queue number.</p>
+        <p *ngIf="isStaff">Monitor and manage queues assigned to your counter.</p>
       </div>
 
       <div class="service-grid">
-        <button
-          *ngFor="let service of session.serviceOptions"
-          type="button"
+        <div
+          *ngFor="let service of services()"
           class="service-card"
-          [class.active]="selectedService?.id === service.id"
-          (click)="selectService(service.id)">
-          <span class="service-icon">{{ service.icon }}</span>
-          <span>{{ service.label }}</span>
-        </button>
+          [class.active]="pendingService() === asText(service.service_id)"
+          [class.locked]="confirmed()"
+          (click)="!isStaff ? selectService(asText(service.service_id)) : null">
+          <div class="service-content">
+            <span class="service-icon" [ngSwitch]="getServiceIconType(service.name)">
+              <svg *ngSwitchCase="'tuition'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <svg *ngSwitchCase="'soa'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="6" x2="12" y2="18"></line><path d="M15 9h-4a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4H9"></path></svg>
+              <svg *ngSwitchCase="'promissory'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              <svg *ngSwitchCase="'inquiry'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              <svg *ngSwitchDefault viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </span>
+            <span>{{ service.name }}</span>
+          </div>
+        </div>
       </div>
 
-      <section class="queue-summary">
-        <div class="queue-summary-title">{{ queueTitle }}</div>
-        <div class="queue-details">
-          <div class="queue-label">CURRENT NUMBER</div>
-          <div class="queue-number">{{ displayNumber ?? '-' }}</div>
+      <div *ngIf="warning()" class="warning-message">{{ warning() }}</div>
+      <div *ngIf="successMessage()" class="success-message">{{ successMessage() }}</div>
+
+      <section class="queue-summary" *ngIf="!isStaff">
+        <div class="queue-summary-left">
+          <div class="queue-summary-title">{{ confirmed() ? queueTitle : 'Select a service' }}</div>
+          <div class="queue-label">YOUR NUMBER</div>
         </div>
-        <button class="next-button" [disabled]="!selectedService || !isStaff" (click)="nextNumber()">
-          {{ isStaff ? 'NEXT NUMBER' : 'Waiting for service' }}
-        </button>
+        <div class="queue-number">{{ displayNumber ?? '-' }}</div>
+      </section>
+
+      <section class="queue-summary" *ngIf="isStaff">
+        <div class="queue-summary-title">Counter {{ assignedCounter ?? '-' }} Queue Management</div>
+        <div class="queue-details">
+          <div class="queue-label">NOW SERVING</div>
+          <div class="queue-number">{{ servingQueue()?.queue_number ?? '-' }}</div>
+        </div>
+        <div class="staff-actions" *ngIf="servingQueue() as current">
+          <button class="next-button" (click)="updateQueueStatus(current.queue_id, 'done')">Mark Served</button>
+          <button class="next-button" (click)="updateQueueStatus(current.queue_id, 'skipped')">Skip Queue</button>
+        </div>
+        <div class="waiting-list">
+          <h4>Waiting Queue</h4>
+          <div *ngFor="let queue of waitingQueues()" class="waiting-item">
+            <span>#{{ queue.queue_number }}</span>
+            <span>{{ queue.student_name || 'Student' }}</span>
+            <span>{{ queue.service_name || 'Service' }}</span>
+          </div>
+          <p *ngIf="waitingQueues().length === 0">No waiting queue.</p>
+        </div>
       </section>
     </section>
 
     <aside class="monitor-panel">
       <div class="monitor-header">
-        <span class="monitor-icon">🖥️</span>
+        <span class="monitor-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+        </span>
         <div>
           <h3>REAL TIME MONITOR</h3>
         </div>
       </div>
 
       <div class="monitor-list">
-        <div *ngFor="let service of session.serviceOptions; let idx = index" class="monitor-item">
+        <div *ngFor="let service of services(); let idx = index" class="monitor-item">
           <span class="monitor-step">{{ idx + 1 }}</span>
           <div class="monitor-body">
-            <div class="monitor-title">{{ service.label }}</div>
+            <div class="monitor-title">{{ service.name }}</div>
+            <button *ngIf="isStaff" class="reset-btn" (click)="resetServiceQueue(service.service_id)" title="Reset queue to 0">Reset</button>
           </div>
         </div>
       </div>
     </aside>
 
-    <button class="logout-fab" (click)="openLogoutConfirm()">⏻</button>
+    <button class="logout-fab" (click)="openLogoutConfirm()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+    </button>
   </main>
+
+  <div class="modal-backdrop" *ngIf="showConfirmModal()">
+    <div class="modal-card">
+      <h3>Are you sure you want to select this service?</h3>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn no" (click)="handleServiceConfirm(false)">NO</button>
+        <button type="button" class="modal-btn yes" (click)="handleServiceConfirm(true)">YES</button>
+      </div>
+    </div>
+  </div>
 
   <div class="modal-backdrop" *ngIf="showLogoutConfirm()">
     <div class="modal-card">

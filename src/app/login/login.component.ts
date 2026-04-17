@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SessionService } from '../session.service';
 
 @Component({
@@ -18,9 +18,10 @@ export class LoginComponent implements OnInit {
 
   public role = signal<'student' | 'staff'>('student');
   public roleLabel = signal('Student');
-  public email = signal('');
-  public password = signal('');
+  public email = '';
+  public password = '';
   public warning = signal('');
+  public isLoading = signal(false);
 
   ngOnInit(): void {
     const roleParam = this.route.snapshot.queryParamMap.get('role')?.toLowerCase() || 'student';
@@ -31,7 +32,7 @@ export class LoginComponent implements OnInit {
   }
 
   public get emailLabel() {
-    return this.role() === 'staff' ? 'Login ID / Name' : 'Email';
+    return 'LDCU Email';
   }
 
   public get passwordLabel() {
@@ -39,21 +40,49 @@ export class LoginComponent implements OnInit {
   }
 
   public get emailPlaceholder() {
-    return this.role() === 'staff' ? 'Enter login ID or name' : 'Enter your email';
+    return this.role() === 'staff' ? 'example@liceo.edu.ph' : 'yourname@liceo.edu.ph';
   }
 
   public get passwordPlaceholder() {
     return 'Enter your password';
   }
 
-  public handleSubmitClicked(): void {
-    if (!this.email().trim() || !this.password().trim()) {
+  public get fullEmail(): string {
+    const raw = this.email.trim().toLowerCase();
+    if (!raw) {
+      return '';
+    }
+
+    if (raw.includes('@')) {
+      return raw;
+    }
+
+    return `${raw}@liceo.edu.ph`;
+  }
+
+  public async handleSubmitClicked(): Promise<void> {
+    if (!this.email.trim() || !this.password.trim()) {
       this.warning.set('The information you entered is incomplete');
       return;
     }
 
-    this.session.setDetails(this.email().trim(), this.password().trim());
+    this.isLoading.set(true);
     this.warning.set('');
+
+    const currentRole = this.role();
+    const emailValue = this.fullEmail || this.email.trim();
+
+    this.session.setAuthUser({
+      userId: 1,
+      role: currentRole,
+      email: emailValue,
+      studentId: currentRole === 'student' ? 1 : undefined,
+      cashierId: currentRole === 'staff' ? 1 : undefined,
+      assignedCounter: currentRole === 'staff' ? 1 : null,
+      fullName: emailValue.split('@')[0]
+    });
+
+    this.isLoading.set(false);
     this.router.navigate(['/queue']);
   }
 }
