@@ -1,119 +1,278 @@
-<div class="page-shell">
-  <header class="app-banner">
-    <div class="brand-left">
-      <div class="logo"></div>
-      <div>
-        <div class="school-name">Liceo de Cagayan University</div>
-        <div class="school-tagline">Committed to Total Human Formation</div>
+<div class="queue-app">
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="brand-icon"></div>
+      <div class="brand-text">
+        <p class="eyebrow">Liceo de Cagayan University</p>
+        <h1>Queue Management System</h1>
+        <p>Real-time service flow for students and cashier staff.</p>
       </div>
     </div>
-    <div class="logo-right"></div>
+
+    <div class="header-user">
+      <div class="user-meta">
+        <span class="user-role" [class.staff-badge]="isStaff" [class.student-badge]="!isStaff">
+          {{ isStaff ? 'Staff' : 'Student' }}
+        </span>
+        <strong>{{ session.fullName() || (isStaff ? 'Cashier Station' : 'Student Portal') }}</strong>
+        <span>{{ session.email() || 'ldcu@queue.local' }}</span>
+      </div>
+
+      <ng-container *ngIf="isStaff">
+        <div class="header-service-chip" *ngIf="selectedServiceDetails() as activeService">
+          <span class="chip-label">Active Service</span>
+          <span class="chip-value">{{ activeService.name }}</span>
+        </div>
+      </ng-container>
+    </div>
   </header>
 
-  <main class="queue-page">
-    <section class="queue-content">
+  <main class="queue-main">
+    <div class="alerts-container" *ngIf="warning() || successMessage()">
+      <div *ngIf="warning()" class="alert alert-warning">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3.05h16.94a2 2 0 0 0 1.71-3.05L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+        {{ warning() }}
+      </div>
+      <div *ngIf="successMessage()" class="alert alert-success">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12" /></svg>
+        {{ successMessage() }}
+      </div>
+    </div>
 
+    <section class="services-section">
       <div class="section-header">
-        <h2>Select Services</h2>
-        <p *ngIf="!isStaff">Choose one service to get your queue number.</p>
-        <p *ngIf="isStaff">Monitor and manage queues assigned to your counter.</p>
+        <h2>{{ isStaff ? 'Assigned Service Modules' : 'Select a Service' }}</h2>
+        <p *ngIf="isStaff">Open a service module to control only that queue. Unassigned services stay locked.</p>
+        <p *ngIf="!isStaff">Choose one service to get your queue number and track real-time updates.</p>
       </div>
 
       <div class="service-grid">
-        <div
-          *ngFor="let service of services()"
+        <button
+          *ngFor="let service of services(); let idx = index"
+          type="button"
           class="service-card"
-          [class.active]="pendingService() === asText(service.service_id)"
-          [class.locked]="confirmed()"
-          (click)="!isStaff ? selectService(asText(service.service_id)) : null">
-          <div class="service-content">
-            <span class="service-icon" [ngSwitch]="getServiceIconType(service.name)">
+          [class.active]="isStaff ? selectedServiceId === asText(service.service_id) : (pendingService() === asText(service.service_id) || selectedServiceId === asText(service.service_id))"
+          [class.locked]="isStaff ? !isServiceAssignedToStaff(service.service_id) : confirmed()"
+          [disabled]="isStaff ? !isServiceAssignedToStaff(service.service_id) : confirmed()"
+          (click)="selectService(asText(service.service_id))">
+          <span class="service-card-band" [style.background]="getServiceColor(idx)"></span>
+          <div class="service-card-head">
+            <div class="service-icon" [ngSwitch]="getServiceIconType(service.name)">
               <svg *ngSwitchCase="'tuition'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
               <svg *ngSwitchCase="'soa'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="6" x2="12" y2="18"></line><path d="M15 9h-4a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4H9"></path></svg>
               <svg *ngSwitchCase="'promissory'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
               <svg *ngSwitchCase="'inquiry'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
               <svg *ngSwitchDefault viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+
+            <span
+              class="service-tag"
+              [class.service-tag-assigned]="isStaff && isServiceAssignedToStaff(service.service_id)"
+              [class.service-tag-locked]="isStaff && !isServiceAssignedToStaff(service.service_id)">
+              {{ isStaff ? (isServiceAssignedToStaff(service.service_id) ? 'Assigned' : 'Unavailable') : 'Open Queue' }}
             </span>
-            <span>{{ service.name }}</span>
           </div>
-        </div>
+
+          <div class="service-card-body">
+            <h3>{{ service.name }}</h3>
+            <p>
+              <span>Now serving</span>
+              <strong>#{{ formatQueueNumber(nowServingForService(service.service_id)) }}</strong>
+            </p>
+            <p *ngIf="isStaff">
+              <span>Waiting</span>
+              <strong>{{ serviceWaitingQueues(service.service_id).length }}</strong>
+            </p>
+          </div>
+        </button>
       </div>
-
-      <div *ngIf="warning()" class="warning-message">{{ warning() }}</div>
-      <div *ngIf="successMessage()" class="success-message">{{ successMessage() }}</div>
-
-      <section class="queue-summary" *ngIf="!isStaff">
-        <div class="queue-summary-left">
-          <div class="queue-summary-title">{{ confirmed() ? queueTitle : 'Select a service' }}</div>
-          <div class="queue-label">YOUR NUMBER</div>
-        </div>
-        <div class="queue-number">{{ displayNumber ?? '-' }}</div>
-      </section>
-
-      <section class="queue-summary" *ngIf="isStaff">
-        <div class="queue-summary-title">Counter {{ assignedCounter ?? '-' }} Queue Management</div>
-        <div class="queue-details">
-          <div class="queue-label">NOW SERVING</div>
-          <div class="queue-number">{{ servingQueue()?.queue_number ?? '-' }}</div>
-        </div>
-        <div class="staff-actions" *ngIf="servingQueue() as current">
-          <button class="next-button" (click)="updateQueueStatus(current.queue_id, 'done')">Mark Served</button>
-          <button class="next-button" (click)="updateQueueStatus(current.queue_id, 'skipped')">Skip Queue</button>
-        </div>
-        <div class="waiting-list">
-          <h4>Waiting Queue</h4>
-          <div *ngFor="let queue of waitingQueues()" class="waiting-item">
-            <span>#{{ queue.queue_number }}</span>
-            <span>{{ queue.student_name || 'Student' }}</span>
-            <span>{{ queue.service_name || 'Service' }}</span>
-          </div>
-          <p *ngIf="waitingQueues().length === 0">No waiting queue.</p>
-        </div>
-      </section>
     </section>
 
-    <aside class="monitor-panel">
+    <div class="content-grid" [class.staff-layout]="isStaff">
+      <section class="queue-display-card" [class.inactive]="isStaff && !hasSelectedService">
+        <div class="queue-display-header">
+          <span class="queue-label">{{ isStaff ? 'ACTIVE SERVICE' : 'YOUR QUEUE' }}</span>
+          <span class="service-name">{{ queueTitle }}</span>
+        </div>
+
+        <div class="queue-number-display">
+          {{ formatQueueNumber(displayNumber) }}
+        </div>
+
+        <ng-container *ngIf="isStaff">
+          <div class="queue-display-footer" *ngIf="selectedServiceDetails() as activeService">
+            <p>Counter {{ activeService.counter_id || '-' }} is serving {{ activeService.name }}.</p>
+          </div>
+        </ng-container>
+        <div class="queue-display-footer" *ngIf="isStaff && !selectedServiceDetails()">
+          <p>Select one assigned service module to activate its queue controls.</p>
+        </div>
+        <div class="queue-display-footer" *ngIf="!isStaff && confirmed()">
+          <p>Wait for your number to be called on the live monitor.</p>
+        </div>
+        <div class="queue-display-footer" *ngIf="!isStaff && !confirmed()">
+          <p>Select a service above to receive a queue number.</p>
+        </div>
+      </section>
+
+      <section class="control-panel" *ngIf="isStaff">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-kicker">Service Controls</span>
+            <h3>{{ selectedServiceDetails()?.name || 'No active service' }}</h3>
+          </div>
+          <span class="panel-state" [class.ready]="hasSelectedService">{{ hasSelectedService ? 'Live' : 'Idle' }}</span>
+        </div>
+
+        <button class="btn btn-primary btn-block" [disabled]="!selectedServiceId" (click)="nextNumber()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 20 10 13 3"></polyline><polyline points="20 10 7 10"></polyline></svg>
+          Next Queue
+        </button>
+
+        <button class="btn btn-secondary btn-block" [disabled]="!undoAvailable()" (click)="undoNextNumber()" title="Undo last Next call">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M3 13A9 9 0 1 0 5.5 5.5L3 7"></path></svg>
+          Undo Last Call
+        </button>
+
+        <div class="button-group" *ngIf="servingQueue() as current">
+          <button class="btn btn-success" (click)="updateQueueStatus(current.queue_id, 'done')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Mark Served
+          </button>
+          <button class="btn btn-warning" (click)="updateQueueStatus(current.queue_id, 'skipped')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            Skip
+          </button>
+        </div>
+
+        <div class="mini-summary-grid">
+          <div class="mini-summary-card">
+            <span>Waiting</span>
+            <strong>{{ waitingQueues().length }}</strong>
+          </div>
+          <div class="mini-summary-card">
+            <span>Current</span>
+            <strong>#{{ formatQueueNumber(currentNumber) }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="queue-summary-card">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-kicker">Queue Summary</span>
+            <h3>{{ isStaff ? (selectedServiceDetails()?.name || 'Service overview') : 'Your active queue' }}</h3>
+          </div>
+        </div>
+
+        <div class="summary-stats">
+          <div class="stat-box">
+            <span class="stat-label">Now Serving</span>
+            <span class="stat-value">#{{ formatQueueNumber(currentNumber) }}</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">Queued</span>
+            <span class="stat-value">{{ waitingQueues().length }}</span>
+          </div>
+        </div>
+
+        <div class="summary-columns">
+          <div class="waiting-list">
+            <h4>Queued Numbers</h4>
+            <div class="queue-items">
+              <div *ngFor="let queue of waitingQueues()" class="queue-item">
+                <span class="queue-item-number">#{{ formatQueueNumber(queue.queue_number) }}</span>
+              </div>
+              <div *ngIf="waitingQueues().length === 0" class="queue-empty">
+                No active waiting numbers.
+              </div>
+            </div>
+          </div>
+
+          <div class="history-panel">
+            <h4>Recent History</h4>
+            <div class="history-items">
+              <div *ngFor="let entry of selectedServiceHistory()" class="history-item">
+                <span class="history-label">Served Snapshot</span>
+                <strong>#{{ formatQueueNumber(entry) }}</strong>
+              </div>
+              <div *ngIf="selectedServiceHistory().length === 0" class="queue-empty">
+                No recent service history yet.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="monitor-panel">
       <div class="monitor-header">
-        <span class="monitor-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-        </span>
         <div>
-          <h3>REAL TIME MONITOR</h3>
+          <span class="panel-kicker">Real-Time Monitor</span>
+          <h2>{{ isStaff ? 'Active Service Feed' : 'All Service Queues' }}</h2>
         </div>
       </div>
 
-      <div class="monitor-list">
-        <div *ngFor="let service of services(); let idx = index" class="monitor-item">
-          <span class="monitor-step">{{ idx + 1 }}</span>
-          <div class="monitor-body">
-            <div class="monitor-title">{{ service.name }}</div>
-            <button *ngIf="isStaff" class="reset-btn" (click)="resetServiceQueue(service.service_id)" title="Reset queue to 0">Reset</button>
+      <div class="monitor-grid" [class.single-service]="isStaff">
+        <div *ngFor="let service of visibleMonitorServices()" class="monitor-card">
+          <div class="monitor-card-header" [style.border-top-color]="getServiceColorById(service.service_id)">
+            <div>
+              <h4>{{ service.name }}</h4>
+              <p>Service queue status</p>
+            </div>
+            <span class="color-tag" [style.background-color]="getServiceColorById(service.service_id)"></span>
+          </div>
+
+          <div class="monitor-card-body">
+            <div class="monitor-stat">
+              <span class="label">Now Serving</span>
+              <span class="value">#{{ formatQueueNumber(nowServingForService(service.service_id)) }}</span>
+            </div>
+
+            <div class="monitor-list-compact">
+              <span>Waiting numbers</span>
+              <strong>{{ serviceWaitingQueues(service.service_id).length }}</strong>
+            </div>
+
+            <div class="monitor-history">
+              <span>History</span>
+              <div class="monitor-history-list">
+                <span *ngFor="let entry of serviceHistoryNumbers(service.service_id)">#{{ formatQueueNumber(entry) }}</span>
+                <span *ngIf="serviceHistoryNumbers(service.service_id).length === 0">No history</span>
+              </div>
+            </div>
+
+            <button *ngIf="isStaff" class="btn btn-secondary btn-small" (click)="resetServiceQueue(service.service_id)" title="Reset queue to 0">
+              Reset Queue
+            </button>
           </div>
         </div>
       </div>
-    </aside>
-
-    <button class="logout-fab" (click)="openLogoutConfirm()">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-    </button>
+    </section>
   </main>
+
+  <button class="btn-logout" (click)="openLogoutConfirm()" title="Logout">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+  </button>
 
   <div class="modal-backdrop" *ngIf="showConfirmModal()">
     <div class="modal-card">
-      <h3>Are you sure you want to select this service?</h3>
+      <h3>Confirm Service Selection</h3>
+      <p>Are you sure you want to select this service?</p>
       <div class="modal-actions">
-        <button type="button" class="modal-btn no" (click)="handleServiceConfirm(false)">NO</button>
-        <button type="button" class="modal-btn yes" (click)="handleServiceConfirm(true)">YES</button>
+        <button type="button" class="btn btn-secondary" (click)="handleServiceConfirm(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="handleServiceConfirm(true)">Confirm</button>
       </div>
     </div>
   </div>
 
   <div class="modal-backdrop" *ngIf="showLogoutConfirm()">
     <div class="modal-card">
-      <h3>Are you sure you want to log out?</h3>
+      <h3>Confirm Logout</h3>
+      <p>Are you sure you want to log out?</p>
       <div class="modal-actions">
-        <button type="button" class="modal-btn no" (click)="confirmLogout(false)">NO</button>
-        <button type="button" class="modal-btn yes" (click)="confirmLogout(true)">YES</button>
+        <button type="button" class="btn btn-secondary" (click)="confirmLogout(false)">Cancel</button>
+        <button type="button" class="btn btn-warning" (click)="confirmLogout(true)">Logout</button>
       </div>
     </div>
   </div>

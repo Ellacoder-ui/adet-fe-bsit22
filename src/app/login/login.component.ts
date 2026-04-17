@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 import { SessionService } from '../session.service';
 
 @Component({
@@ -15,6 +16,7 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private session = inject(SessionService);
+  private authService = inject(AuthService);
 
   public role = signal<'student' | 'staff'>('student');
   public roleLabel = signal('Student');
@@ -49,18 +51,12 @@ export class LoginComponent implements OnInit {
 
   public get fullEmail(): string {
     const raw = this.email.trim().toLowerCase();
-    if (!raw) {
-      return '';
-    }
-
-    if (raw.includes('@')) {
-      return raw;
-    }
-
+    if (!raw) return '';
+    if (raw.includes('@')) return raw;
     return `${raw}@liceo.edu.ph`;
   }
 
-  public async handleSubmitClicked(): Promise<void> {
+  public handleSubmitClicked(): void {
     if (!this.email.trim() || !this.password.trim()) {
       this.warning.set('The information you entered is incomplete');
       return;
@@ -69,19 +65,17 @@ export class LoginComponent implements OnInit {
     this.isLoading.set(true);
     this.warning.set('');
 
-    const currentRole = this.role();
+    // DEV BYPASS: accept any credentials
     const emailValue = this.fullEmail || this.email.trim();
-
+    const currentRole = this.role();
     this.session.setAuthUser({
       userId: 1,
       role: currentRole,
       email: emailValue,
-      studentId: currentRole === 'student' ? 1 : undefined,
       cashierId: currentRole === 'staff' ? 1 : undefined,
       assignedCounter: currentRole === 'staff' ? 1 : null,
       fullName: emailValue.split('@')[0]
     });
-
     this.isLoading.set(false);
     this.router.navigate(['/queue']);
   }

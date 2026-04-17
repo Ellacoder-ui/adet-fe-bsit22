@@ -92,10 +92,21 @@ export class SessionService {
     position?: number | null;
     currentServingNumber?: number | null;
   }): void {
-    this.queueId.set(data.queueId ?? null);
-    this.assignedNumber.set(data.queueNumber ?? null);
-    this.assignedCounter.set(data.counterId ?? this.assignedCounter());
-    this.queuePosition.set(data.position ?? null);
+    if (data.queueId !== undefined) this.queueId.set(data.queueId ?? null);
+    // Only overwrite assignedNumber when the caller provides a valid positive
+    // value. This prevents polling callbacks from silently wiping out a ticket
+    // number that was already issued (e.g. when the backend returns 0 or null).
+    const incoming = data.queueNumber;
+    if (incoming != null && incoming > 0) {
+      this.assignedNumber.set(incoming);
+    } else if (incoming === null && data.queueId === null) {
+      // Explicit full-reset path (e.g. logout / back-to-selection).
+      this.assignedNumber.set(null);
+    }
+    if (data.counterId !== undefined) {
+      this.assignedCounter.set(data.counterId ?? this.assignedCounter());
+    }
+    if (data.position !== undefined) this.queuePosition.set(data.position ?? null);
     this.currentServingNumber.set(data.currentServingNumber ?? this.currentServingNumber());
   }
 }

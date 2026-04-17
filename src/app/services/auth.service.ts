@@ -1,60 +1,49 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { ApiService } from './api.service';
+import { Observable, tap } from 'rxjs';
 
-export interface User {
-  user_id: number;
+const TOKEN_KEY = 'qjump_token';
+const USER_KEY = 'qjump_user';
+
+export interface AuthUser {
+  id: number;
   email: string;
-  role: 'student' | 'staff';
-  student_id?: number;
-  cashier_id?: number;
-  assigned_counter?: number | null;
-  full_name?: string;
-  created_at: string;
-  updated_at: string;
+  role: string;
+  fullName?: string;
+  studentId?: string;
 }
 
-export interface LoginRequest {
-  email: string;
-  password: string;
+export interface LoginResponse {
+  token: string;
+  user: AuthUser;
 }
 
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  role: 'student' | 'staff';
-  fullName: string;
-}
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private API = 'http://localhost:3000/api';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthService extends ApiService {
+  constructor(private http: HttpClient) {}
 
-  login(credentials: LoginRequest): Observable<User> {
-    return this.post<User>('/auth/login', credentials)
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          } else {
-            throw new Error(response.error || 'Login failed');
-          }
-        })
-      );
+  login(identifier: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.API}/auth/login`, { identifier, password }).pipe(
+      tap(res => {
+        localStorage.setItem(TOKEN_KEY, res.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(res.user));
+      })
+    );
   }
 
-  register(userData: RegisterRequest): Observable<any> {
-    return this.post('/auth/register', userData)
-      .pipe(
-        map(response => {
-          if (response.success) {
-            return response.data;
-          } else {
-            throw new Error(response.error || 'Registration failed');
-          }
-        })
-      );
+  logout(): void {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+
+  getStoredUser(): AuthUser | null {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
   }
 }

@@ -18,6 +18,7 @@
 .login-grid {
   display: grid;
   grid-template-columns: 1fr;
+  align-items: stretch;
 }
 
 .login-panel,
@@ -28,6 +29,9 @@
 .login-panel {
   background: linear-gradient(180deg, #8c141d 0%, #af531f 100%);
   color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .login-eyebrow {
