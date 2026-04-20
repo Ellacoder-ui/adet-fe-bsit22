@@ -20,12 +20,12 @@ export class ApiService {
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred';
 
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
+    if (error.status === 0) {
+      errorMessage = 'Cannot connect to the server. Please make sure the backend is running, then refresh the page.';
+    } else if (error.error instanceof ErrorEvent) {
       errorMessage = error.error.message;
     } else {
-      // Server-side error
-      errorMessage = error.error?.error || `Error Code: ${error.status}`;
+      errorMessage = error.error?.error || error.error?.message || `Error Code: ${error.status}`;
     }
 
     console.error('API Error:', errorMessage);
