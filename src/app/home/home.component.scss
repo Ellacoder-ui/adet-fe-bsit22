@@ -1,0 +1,143 @@
+.landing-shell {
+  min-height: 100vh;
+  background: #f2f2f2;
+}
+
+.landing-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: #8c141d;
+  color: #fff;
+}
+
+.brand-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo,
+.logo-right {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  .logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.school-name {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.school-tagline {
+  opacity: 0.88;
+}
+
+.home-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 0.7rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.hero-copy h1 {
+  font-size: clamp(2.4rem, 4vw, 3.6rem);
+  color: #111;
+}
+
+.hero-copy p {
+  font-size: 1.05rem;
+  color: #333;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem;
+}
+
+.role-card {
+  border-radius: 28px;
+  border: 1px solid #d5d5d5;
+  background: #fff;
+  padding: 2rem;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+}
+
+.role-icon {
+  width: 86px;
+  height: 86px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #8c141d;
+  color: #f9e4a3;
+  font-size: 2.1rem;
+  margin: 0 auto;
+}
+
+.role-card h2 {
+  text-align: center;
+  margin: 1.3rem 0 1rem;
+  font-size: 1.8rem;
+}
+
+.role-card p {
+  color: #555;
+  line-height: 1.8;
+}
+
+.btn {
+  margin-top: 1.5rem;
+  justify-self: center;
+  padding: 1rem 2rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.btn-primary {
+  background: #f6bf1a;
+  color: #201c15;
+}
+
+.btn-secondary {
+  background: #6d6d6d;
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .role-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .landing-banner,
+  .home-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
