@@ -33,21 +33,14 @@ export class AuthService {
     return this.http.post<{ success: boolean; data: any; error?: string }>(
       `${this.API}/auth/login`, body
     ).pipe(
-      switchMap(res => {
+      map(res => {
         if (!res.success || !res.data) {
-          return throwError(() => new Error(res.error || 'Login failed'));
+          throw new Error(res.error || 'Login failed');
         }
         const d = res.data;
-        // For students, fetch their student record to obtain student_id
-        if (d.role === 'student') {
-          return this.http.get<{ success: boolean; data: any }>(
-            `${this.API}/students/user/${d.id}`
-          ).pipe(
-            map(sr => ({ loginData: d, studentId: sr.success ? (sr.data?.id ?? sr.data?.student_id ?? null) : null })),
-            catchError(() => of({ loginData: d, studentId: null as number | null }))
-          );
-        }
-        return of({ loginData: d, studentId: null as number | null });
+        // Use student_id from login response if available
+        const studentId = d.role === 'student' ? (d.student_id ?? d.id ?? null) : null;
+        return { loginData: d, studentId };
       }),
       map(({ loginData: d, studentId }) => {
         const user: AuthUser = {
