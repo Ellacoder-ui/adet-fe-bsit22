@@ -177,7 +177,7 @@ export class QueueService {
   }
 
   updateQueueStatus(queueId: number, status: string, role: string): Observable<any> {
-    return this.http.put<{ success: boolean; data: any; error?: string }>(
+    return this.http.post<{ success: boolean; data: any; error?: string }>(
       `${this.API}/queues/update-status`,
       { queue_id: queueId, status, role }
     ).pipe(
